@@ -6,7 +6,7 @@ The experimental results are input in [util/SN_exp_params.py](util/SN_exp_params
 ```
 deployment: {results_file, motes : {name, location}}
 ```
-Where the results file is a .mat that has been generated using the relevant Cp_calc_*.m function for either [the Space Needle](https://github.com/jhochs/Cp_measurements_matlab/blob/main/Cp_calc_SN_xlsinput.m) or [650 California](https://github.com/jhochs/Cp_measurements_matlab/blob/main/Cp_calc_650Cal.m).
+Where the results file is a .mat that has been generated using the relevant Cp_calc_*.m function for either [the Space Needle](https://github.com/jhochs/Cp_meas_process/blob/main/MATLAB/Cp_calc_SN_xlsinput.m) or [650 California](https://github.com/jhochs/Cp_meas_process/blob/main/MATLAB/Cp_calc_650Cal.m).
 
 The path to the LES results are specified towards the beginning of the main scripts [SN_LES_FS_comparison_dCp.py](SN_LES_FS_comparison_dCp.py) and [Cal650_LES_FS_comparison_dCp.py](Cal650_LES_FS_comparison_dCp.py) and are also assumed to be in .mat files exported by [LES_results.m](https://github.com/jhochs/CharLES_matlab/blob/main/LES_results.m).
 
