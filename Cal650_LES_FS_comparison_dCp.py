@@ -86,6 +86,12 @@ meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0], meas_
 for i in [1, 2, 3]:
   meas_data['g_' + str(i)] = np.abs(meas_data['dCpmin_' + str(i)]) / meas_data['dCprms_' + str(i)] 
 
+# For exporting all data in a single csv:
+# meas_data.drop(columns=['i', 'outlier_idx', 'Above WS threshold', 'Above Cp range threshold', 'dCprms_range', 'dCpmin_range', 'conv_dCpmin_1', 'conv_dCpmin_2', 'conv_dCpmin_3'], inplace=True)
+# meas_data.rename(columns={'Sensors online':'Sensors_online'}, inplace=True)
+# meas_data.to_csv('~/Desktop/SF_building_data/SFbldg_Cpstats_all_WScorrected.csv')
+# exit()
+
 meas_data_binned = Cal650.bin_by(meas_data)
 
 if color_choice is not None:

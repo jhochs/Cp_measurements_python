@@ -71,7 +71,7 @@ for i in [1, 2, 3]:
 
 # For exporting all data in a single csv:
 # meas_data.drop(columns=['i', 'outlier_idx', 'Above WS threshold', 'Above Cp range threshold'], inplace=True)
-# meas_data.rename(columns={'Sensors online':'Sensors_online', 'Degrees from WDir':'Degrees_from_WDir'})
+# meas_data.rename(columns={'Sensors online':'Sensors_online', 'Degrees from WDir':'Degrees_from_WDir'}, inplace=True)
 # meas_data.to_csv('~/Dropbox/School/Wind_Engineering/Sensor_Network/Code/Data/SN_Cpstats_all_WScorrected.csv')
 # exit()
 
