@@ -38,13 +38,13 @@ n_bins = 3  # if plotting by binning turbulence intensity
 
 # Plot options
 roofs = ['sloped', 'flat']
-stats = ['dCprms', 'dCpmin']
+stats = ['dCprms', 'dCpmin', 'g']
 color_choice = 'TurbIntensity' # None | 'TurbIntensity' | 'Lux' | 'eta' ; etc.
 cmap_choice = 'Hot'
 plot_meas = True
 plot_LES = True
 show_region_divides = True
-save_path = '../Plots/Space_Needle/LES_FS_dCp.html'
+save_path = '../Plots/Space_Needle/LES_FS_dCp_binned.html'
 # for more plot control, uncomment/comment function calls on lines 98-105
 
 #====================================================================================
@@ -95,13 +95,13 @@ fig = common.init_subplots(len(stats), len(roofs))
 legend_label, cbar_label = common.labels(color_choice)
 
 if plot_meas:
-  SN.plot_meas_points(fig, meas_data, roofs, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds)
+  # SN.plot_meas_points(fig, meas_data, roofs, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds)
   
   plot_mean = True
   plot_CI = True
   # SN.plot_meas_mean_CI(fig, meas_data_binned, roofs, stats, [plot_mean, plot_CI])
 
-  # SN.plot_meas_intervals(fig, meas_data_Iu_binned, roofs, stats, color_choice, cmap_choice, cbounds, [plot_mean, plot_CI])
+  SN.plot_meas_intervals(fig, meas_data_Iu_binned, roofs, stats, color_choice, cmap_choice, cbounds, [plot_mean, plot_CI])
   # common.bins_legend(fig, bins, cmap_choice, cbounds, legend_label)
 
 #====================================================================================

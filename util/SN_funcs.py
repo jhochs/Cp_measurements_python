@@ -190,12 +190,11 @@ def bin_by(df, **kwargs):
 
     # Aggregate and calculate statistics:
     df_binned = df_allsensors.groupby(group_cols).agg({'Roof' : 'first',
-                                                                    'dCpmin_noEV' : common.gumbel_min,
-                                                                    'dCprms' : ['mean', 'std', common.deltaplus, common.deltaminus],
-                                                                    'g' : ['mean', 'std', common.deltaplus, common.deltaminus],
-                                                                    'dCp_skewness' : ['mean', 'std', common.deltaplus, common.deltaminus],
-                                                                    'dCp_kurtosis' : ['mean', 'std', common.deltaplus, common.deltaminus],
-                                                                    'i' : 'size'}).reset_index()
+                                                        'dCpmin_noEV' : common.gumbel_min,
+                                                        'dCprms' : ['mean', 'std', common.deltaplus, common.deltaminus],
+                                                        'dCp_skewness' : ['mean', 'std', common.deltaplus, common.deltaminus],
+                                                        'dCp_kurtosis' : ['mean', 'std', common.deltaplus, common.deltaminus],
+                                                        'i' : 'size'}).reset_index()
 
     # Collapse multi index:
     df_binned.columns = df_binned.columns.map('_'.join)
@@ -203,7 +202,12 @@ def bin_by(df, **kwargs):
     # If using Cook and Mayne method:
     df_binned.rename(columns={'dCpmin_noEV_gumbel_min' : 'dCpmin_mean'}, inplace=True)
     df_binned[['dCpmin_deltaplus', 'dCpmin_deltaminus']] = 0
-    
+
+    # Recalculate peak factor:
+    df_binned['g_mean'] = np.abs(df_binned['dCpmin_mean'] / df_binned['dCprms_mean'])
+    df_binned['g_deltaplus'] = np.abs(df_binned['dCpmin_mean'] / df_binned['dCprms_mean'] ** 2) * df_binned['dCprms_deltaplus']
+    df_binned['g_deltaminus'] = np.abs(df_binned['dCpmin_mean'] / df_binned['dCprms_mean'] ** 2) * df_binned['dCprms_deltaminus']
+
     if 'grouping' in kwargs:
         df_binned.rename(columns={'Roof_first':'Roof', 'loc_idx_':'loc_idx', 'bin_idx_':'bin_idx', 'i_size':'Count'}, inplace=True)
         
