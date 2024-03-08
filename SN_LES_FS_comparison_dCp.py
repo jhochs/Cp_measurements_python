@@ -38,13 +38,13 @@ n_bins = 3  # if plotting by binning turbulence intensity
 
 # Plot options
 roofs = ['sloped', 'flat']
-stats = ['dCprms', 'dCpmin', 'g']
+stats = ['dCprms', 'dCpmin']
 color_choice = 'TurbIntensity' # None | 'TurbIntensity' | 'Lux' | 'eta' ; etc.
 cmap_choice = 'Hot'
 plot_meas = True
 plot_LES = True
-show_region_divides = True
-save_path = '../Plots/Space_Needle/LES_FS_dCp_binned.html'
+show_region_divides = False
+save_path = '../Plots/Space_Needle/LES_FS_dCp.html'
 # for more plot control, uncomment/comment function calls on lines 98-105
 
 #====================================================================================
@@ -54,7 +54,7 @@ Cp_sloped_perim = []
 for path in LES_results_paths:
   Cp_sloped_perim.append(SN.get_perimeter_results(path + 'sloped_roof_Cpstats.mat', 'sloped_roof'))
   Cp_flat_perim.append(SN.get_perimeter_results(path + 'flat_roof_Cpstats.mat', 'flat_roof'))
-  
+
 #====================================================================================
 # IMPORT MEAS RESULTS
 meas_data = SN.prepare_meas_data(exp_params.FS, exp_params.WS_correction, exp_params.WDir_correction, minU, dCprms_maxRange, dCpmin_maxRange, exclude_third_outlier)
@@ -82,7 +82,7 @@ meas_data_binned = SN.bin_by(meas_data)
 
 if color_choice is not None:
   cbounds = [np.percentile(meas_data[color_choice], cbound_percentiles[0]), np.percentile(meas_data[color_choice], cbound_percentiles[1])]
-  cbounds[1] = 0.13 # hardcoded since otherwise some datapoints appear too white
+  cbounds[1] = 0.135 # hardcoded since otherwise some datapoints appear too white
   bins = np.linspace(cbounds[0], cbounds[1], n_bins+1)
   meas_data_Iu_binned = SN.bin_by(meas_data, grouping=color_choice, bins=bins)
 else:
@@ -95,13 +95,13 @@ fig = common.init_subplots(len(stats), len(roofs))
 legend_label, cbar_label = common.labels(color_choice)
 
 if plot_meas:
-  # SN.plot_meas_points(fig, meas_data, roofs, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds)
+  SN.plot_meas_points(fig, meas_data, roofs, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds)
   
   plot_mean = True
   plot_CI = True
   # SN.plot_meas_mean_CI(fig, meas_data_binned, roofs, stats, [plot_mean, plot_CI])
 
-  SN.plot_meas_intervals(fig, meas_data_Iu_binned, roofs, stats, color_choice, cmap_choice, cbounds, [plot_mean, plot_CI])
+  # SN.plot_meas_intervals(fig, meas_data_Iu_binned, roofs, stats, color_choice, cmap_choice, cbounds, [plot_mean, plot_CI])
   # common.bins_legend(fig, bins, cmap_choice, cbounds, legend_label)
 
 #====================================================================================
@@ -162,5 +162,8 @@ common.add_axis_labels(fig, stats, roofs, 'Degrees along perimeter, from wind di
 if color_choice is not None:
   # Add colorbar:
   fig.update_traces(marker=dict(colorbar={'title': {'text' : cbar_label, 'font': {'size': 24, 'family': 'Arial'}}}, colorbar_x=0.46), row=1, col=1)
+
+# Add reference line:
+SN.add_reference_lines(fig, stats, roofs)
 
 fig.write_html(save_path)

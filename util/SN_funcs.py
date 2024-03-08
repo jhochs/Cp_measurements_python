@@ -324,13 +324,38 @@ def plot_meas_intervals(fig, meas, roofs, stats, color_choice, cmap_choice, cbou
                     if stats[row] != 'dCpmin':
                         common.plot_CIs(fig, row+1, col+1, x_data, y_data, errplus_data, errminus_data, color=color_cur)
 
+def add_reference_lines(fig, stats, roofs):
+    for row in range(len(stats)):
+        if stats[row] == 'g':
+            ref_value = 3.4
+        elif stats[row] == 'dCp_skewness':
+            ref_value = 0
+        elif stats[row] == 'dCp_kurtosis':
+            ref_value = 3.5
+        else:
+            return
+        
+        for col in range(len(roofs)):
+            fig.add_trace(go.Scatter(
+                x=[0, 360], 
+                y=[ref_value, ref_value], 
+                mode='lines',
+                marker_color='black',
+                line=dict(dash='dash'),
+                showlegend=False
+            ),row=1+row, col=1+col)
+
+
 def set_figure_size(fig, rows, cols):
     if cols==1:
         width = 1400
     else:
         width = 2750
     
-    height = 350*rows
+    if rows==1:
+        height = 395
+    else:
+        height = 350*rows
 
     fig.update_layout(
         autosize=False,

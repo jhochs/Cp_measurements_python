@@ -176,7 +176,7 @@ def init_subplots(rows, cols):
 
     fig = make_subplots(
         rows=rows, cols=cols,
-        vertical_spacing=0.05,
+        vertical_spacing=0.1,
         specs=all
         )
     
