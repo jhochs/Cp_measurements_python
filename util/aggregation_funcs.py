@@ -24,6 +24,34 @@ def MC_ranges(rms, skewness_sign, N_samples):
     of skewness and kurtosis given limited samples from this distribution
     '''
     N_repetitions = 1000
+    sk = []
+    ku = []
+    for i in range(N_repetitions):
+        samples = np.random.lognormal(0, rms, N_samples)
+        sk.append(stats.skew(samples))
+        ku.append(stats.kurtosis(samples, fisher=False))
+
+    # esigmasq = np.exp(rms ** 2)
+    # sk_true = np.sqrt(esigmasq - 1) * (esigmasq + 2)
+    # ku_true = 3 + (esigmasq - 1) * (esigmasq ** 3 + 3 * esigmasq ** 2 + 6 * esigmasq + 6)
+    # plt.plot(sk, ku, 'k.')
+    # plt.plot(sk_true, ku_true, 'r+')
+    # plt.show()
+
+    # Get 95% ranges of sk, ku
+    sk_range = np.multiply(skewness_sign.mode, [np.percentile(sk, 2.5), np.percentile(sk, 97.5)])
+    ku_range = np.array([np.percentile(ku, 2.5), np.percentile(ku, 97.5)])
+
+    return np.abs(sk_range[1] - sk_range[0]), np.abs(ku_range[1] - ku_range[0])
+
+def MC_ranges_subsample(rms, subsample, skewness_sign, N_samples):
+    '''
+    Given a distribution's truth rms (stdev) value, find the ranges
+    of skewness and kurtosis given limited samples from this distribution
+    '''
+    N_repetitions = 1000
+    N_samples = int(np.round(N_samples / subsample))
+    print('Mean Tint = %.1f, so N_samples = %d' %(subsample / 12.5, N_samples))
 
     sk = []
     ku = []
@@ -143,9 +171,9 @@ def perform_aggregation(df, Iu_bounds, min_windows, method):
         N_points = dff.shape[0]
         print('------------- Position %.2f, Ntot = %d -------------' %(pos, N_points))
 
-        # Normalize dCpskew and dCpkurt by max range so they are weighted equally:
+    # Normalize dCpskew and dCpkurt by max range so they are weighted equally:
         if method == 'MC_ranges':
-            dCpskew_range, dCpkurt_range = MC_ranges(np.mean(dff['dCprms']), stats.mode(np.sign(dff['dCpskew'])), 40)
+            dCpskew_range, dCpkurt_range = MC_ranges_subsample(np.mean(dff['dCprms']), np.mean(dff['dCp_Tint']) * 12.5, stats.mode(np.sign(dff['dCpskew'])), 7500)
         elif method == 'LES_ranges':
             dCpskew_range, dCpkurt_range = ranges_by_position(ranges, pos)
         else:

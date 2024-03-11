@@ -171,7 +171,8 @@ def wide_to_long(df):
              'dCpmin_1', 'dCpmin_2', 'dCpmin_3', 
              'dCpmin_noEV_1', 'dCpmin_noEV_2', 'dCpmin_noEV_3', 
              'dCp_skewness_1', 'dCp_skewness_2', 'dCp_skewness_3', 
-             'dCp_kurtosis_1', 'dCp_kurtosis_2', 'dCp_kurtosis_3']]
+             'dCp_kurtosis_1', 'dCp_kurtosis_2', 'dCp_kurtosis_3',
+             'dCp_Tint_1', 'dCp_Tint_2', 'dCp_Tint_3']]
 
     df[['Position_1', 'Position_2', 'Position_3']] = df['Position'].apply(pd.Series)
     df.drop(columns='Position', inplace=True)
@@ -179,9 +180,21 @@ def wide_to_long(df):
     # Get rid of _1,2,3:
     df.reset_index(drop=True, inplace=True)
     df['id'] = df.index
-    df = pd.wide_to_long(df, ['Position_', 'dCprms_', 'dCpmin_', 'dCpmin_noEV_', 'dCp_skewness_', 'dCp_kurtosis_'], i='id', j='Sensor')
+    df = pd.wide_to_long(df, ['Position_', 
+                              'dCprms_', 
+                              'dCpmin_', 
+                              'dCpmin_noEV_', 
+                              'dCp_skewness_', 
+                              'dCp_kurtosis_', 
+                              'dCp_Tint_'], i='id', j='Sensor')
 
-    df.rename(columns={'Position_':'Position', 'dCprms_':'dCprms', 'dCpmin_':'dCpmin', 'dCpmin_noEV_':'dCpmin_noEV', 'dCp_skewness_':'dCpskew', 'dCp_kurtosis_':'dCpkurt'}, inplace=True)
+    df.rename(columns={'Position_':'Position', 
+                       'dCprms_':'dCprms', 
+                       'dCpmin_':'dCpmin', 
+                       'dCpmin_noEV_':'dCpmin_noEV', 
+                       'dCp_skewness_':'dCpskew', 
+                       'dCp_kurtosis_':'dCpkurt', 
+                       'dCp_Tint_':'dCp_Tint'}, inplace=True)
     df.dropna(axis=0, inplace=True)
 
     # Remove NaN:
