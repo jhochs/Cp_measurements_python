@@ -40,10 +40,10 @@ def MC_ranges(rms, skewness_sign, N_samples):
     # plt.show()
 
     # Get 95% ranges of sk, ku
-    sk_range = np.multiply(skewness_sign, [np.percentile(sk, 2.5), np.percentile(sk, 97.5)])
+    sk_range = np.multiply(skewness_sign.mode, [np.percentile(sk, 2.5), np.percentile(sk, 97.5)])
     ku_range = np.array([np.percentile(ku, 2.5), np.percentile(ku, 97.5)])
 
-    return sk_range, ku_range
+    return np.abs(sk_range[1] - sk_range[0]), np.abs(ku_range[1] - ku_range[0])
 
 def determine_clusters(df):
     X = np.column_stack((df['dCpskew'], df['dCpkurt']))
@@ -145,13 +145,14 @@ def perform_aggregation(df, Iu_bounds, min_windows, method):
 
         # Normalize dCpskew and dCpkurt by max range so they are weighted equally:
         if method == 'MC_ranges':
-            dCpskew_range, dCpkurt_range = MC_ranges(np.mean(dff['dCprms']), stats.mode(np.sign(dff['dCpskew'])), 7500)
+            dCpskew_range, dCpkurt_range = MC_ranges(np.mean(dff['dCprms']), stats.mode(np.sign(dff['dCpskew'])), 40)
         elif method == 'LES_ranges':
             dCpskew_range, dCpkurt_range = ranges_by_position(ranges, pos)
-            dff['dCpskew'] = dff['dCpskew'] / dCpskew_range
-            dff['dCpkurt'] = dff['dCpkurt'] / dCpkurt_range
         else:
             raise ValueError('method must be "MC_ranges" for monte-carlo sampling derived skewness and kurtosis ranges or "LES_ranges" for LES-derived ranges')
+
+        dff['dCpskew'] = dff['dCpskew'] / dCpskew_range
+        dff['dCpkurt'] = dff['dCpkurt'] / dCpkurt_range
 
         if N_points >= min_windows:
             determine_clusters(dff)
