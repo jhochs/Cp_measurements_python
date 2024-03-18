@@ -24,7 +24,7 @@ FS results - run the script Cp_calc_xlsinput.m
 LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/SN/Results/SN_smooth_RL4_5_x0_5stresses/',
                      '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/SN/Results/SN_smooth_RL4_5/',
                      '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/SN/Results/SN_smooth_RL4_5_x4stresses_x2Lint/']
-LES_Iu = [0.051, 0.087, 0.120]  # LES turbulence intensity as measured by rooftop anemometer
+LES_Iu = [0.055, 0.091, 0.118]  # LES turbulence intensity as measured by rooftop anemometer
 
 minU = 6  # windspeed after correction, i.e. freestream threshold
 dCpmin_maxRange = 0.4 # exclude datapoints where range between measurements from different sensors on mote exceeds this value
