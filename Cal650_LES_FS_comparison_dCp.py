@@ -38,7 +38,7 @@ LES_Iu = [0.71]
 types = ['tethered']  # ['tethered', 'onboard']
 stats = ['dCprms', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
 color_choice = None  # None | 'TurbIntensity_x' | 'Lux' | 'eta' ; etc.
-cmap_choice =  'Haline' # 'Haline' | 'thermal'
+cmap_choice =  'oranges' # 'Haline' | 'thermal'
 plot_meas = True
 plot_agg_meas = True
 plot_LES = True
@@ -113,7 +113,7 @@ legend_label, cbar_label = common.labels(color_choice)
 
 if plot_meas:
   if plot_agg_meas:
-    agg_fx.plot_agg_meas_points(fig, df_agg, stats, 'N_windows')
+    agg_fx.plot_agg_meas_points(fig, df_agg, stats, color='N_windows', cmap=cmap_choice)
   else:
     Cal650.plot_meas_points(fig, meas_data, types, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds)
   # plot_mean = True

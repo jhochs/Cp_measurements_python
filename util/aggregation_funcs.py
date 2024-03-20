@@ -166,6 +166,8 @@ def perform_aggregation(df, Iu_bounds, min_windows, method):
     # Initialize dCpmin aggregated dataset:
     df_agg = pd.DataFrame(columns=['Position', 'N_windows', 'dCprms_avg', 'dCprms_range', 'dCpmin_160', 'dCpskew_range', 'dCpkurt_range'])
 
+    # skew_ranges_MC_ss = []
+    # kurt_ranges_MC_ss = []
     for pos in positions: #[75.72]: 
         dff = df[df['Position'] == pos]
         N_points = dff.shape[0]
@@ -174,6 +176,8 @@ def perform_aggregation(df, Iu_bounds, min_windows, method):
     # Normalize dCpskew and dCpkurt by max range so they are weighted equally:
         if method == 'MC_ranges':
             dCpskew_range, dCpkurt_range = MC_ranges_subsample(np.mean(dff['dCprms']), np.mean(dff['dCp_Tint']) * 12.5, stats.mode(np.sign(dff['dCpskew'])), 7500)
+            # skew_ranges_MC_ss.append(dCpskew_range)
+            # kurt_ranges_MC_ss.append(dCpkurt_range)
         elif method == 'LES_ranges':
             dCpskew_range, dCpkurt_range = ranges_by_position(ranges, pos)
         else:
@@ -205,9 +209,26 @@ def perform_aggregation(df, Iu_bounds, min_windows, method):
             # Calculate dCpmin and add it to the aggregated dataset
             df_agg = calculate_dCpmin(pos, dff, df_agg, min_windows)
     
+    # import matplotlib.pyplot as plt
+    # plt.rc('font', size=15)
+    # f, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+    # ax1.plot(positions, skew_ranges_MC_ss, 'kx-', label='MC, Independent samples')
+    # ax1.plot(positions, skew_ranges_MC_LES, 'bx-', label='LES')
+    # ax1.set_ylabel(r"$\Delta C'_{p,skew}$")
+
+    # ax2.plot(positions, kurt_ranges_MC_ss, 'kx-', label='MC, Independent samples')
+    # ax2.plot(positions, kurt_ranges_MC_LES, 'bx-', label='LES')
+    # ax2.set_ylabel(r"$\Delta C'_{p,kurt}$")
+    # ax2.set_xlabel("Position")
+    # ax2.legend()
+    # plt.show()
+
     return df_agg
 
-def plot_agg_meas_points(fig, df, stats, color):
+def plot_agg_meas_points(fig, df, stats, **kwargs):
+    color = kwargs['color']
+    cmap = kwargs['cmap']
+
     agg_stats = stats.copy()
 
     # Only setup for tethered motes (parapet side)
@@ -229,9 +250,9 @@ def plot_agg_meas_points(fig, df, stats, color):
                 size=10,
                 line=dict(
                     width=1,
-                    color='white'
+                    color='black'
                 ),
-                colorscale='Haline', 
+                colorscale=cmap, 
                 opacity=1
             ),
             showlegend=False),
