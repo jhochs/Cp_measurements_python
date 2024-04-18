@@ -27,23 +27,24 @@ n_bins = 3  # if plotting by binning turbulence intensity
 agg_Iu_range = [0.68, 0.73] # for aggregation only
 agg_ranges_method = 'MC_ranges' # MC_ranges | LES_ranges
 
-LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/']
-wind_angles = [270]
-wind_angles_corr = [256]
+LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
+                     '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL0_5/']
+wind_angles = [270, 280]
+wind_angles_corr = [256, 270]
 
 # LES turbulence intensity as measured by rooftop anemometer:
-LES_Iu = [0.71]
+LES_Iu = [0.71, 0.62]
 
 # Plot options
 types = ['tethered']  # ['tethered', 'onboard']
 stats = ['dCprms', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
-color_choice = None  # None | 'TurbIntensity_x' | 'Lux' | 'eta' ; etc.
-cmap_choice =  'oranges' # 'Haline' | 'thermal'
+color_choice = 'TurbIntensity_x'  # None | 'TurbIntensity_x' | 'Lux' | 'eta' ; etc.
+cmap_choice =  'Haline' # 'Haline' | 'thermal' | 'oranges'
 plot_meas = True
-plot_agg_meas = True
+plot_agg_meas = False
 plot_LES = True
-plot_LES_uncertainty = True
-save_path = '../Plots/650Cal/LES_FS_dCp_agg.html'
+plot_LES_uncertainty = False
+save_path = '../Plots/650Cal/LES_FS_dCp_270_280.html'
 # for more plot control, uncomment/comment function calls on lines 106-116
 
 #====================================================================================
