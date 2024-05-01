@@ -8,7 +8,7 @@ import numpy as np
 
 # Correction for FS measurements based on LES results:
 WDir_correction = 0
-WS_correction = 1.92
+WS_correction = 1.83
 
 edge_length = 3718  # length of each side of 650 California, in cm
 

@@ -18,8 +18,8 @@ dCprms_maxRange = 0.03
 exclude_third_outlier = True  # doesn't apply for tethered motes
 exclude_lowWS = True
 exclude_highRangeStats = False  # doesn't apply for tethered motes
-WDir_range = [248, 266]
-# Note that LES WDir range is [255, 258] and Iu = [0.68, 0.73]
+WDir_range = [250, 272]
+# Note that 270deg LES WDir range is [255, 258] and Iu = [0.68, 0.73]
 
 cbound_percentiles = [3, 97]  # used for both binning and regular plot colorbar
 n_bins = 3  # if plotting by binning turbulence intensity
@@ -28,22 +28,22 @@ agg_Iu_range = [0.68, 0.73] # for aggregation only
 agg_ranges_method = 'MC_ranges' # MC_ranges | LES_ranges
 
 LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
-                     '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL0_5/']
+                     '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']
 wind_angles = [270, 280]
-wind_angles_corr = [256, 270]
+wind_angles_corr = [256, 267]
 
 # LES turbulence intensity as measured by rooftop anemometer:
-LES_Iu = [0.71, 0.62]
+LES_Iu = [0.71, 0.57]
 
 # Plot options
 types = ['tethered']  # ['tethered', 'onboard']
-stats = ['dCprms', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
-color_choice = 'TurbIntensity_x'  # None | 'TurbIntensity_x' | 'Lux' | 'eta' ; etc.
+stats = ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
+color_choice = 'WDiravg'  # None | 'TurbIntensity_x' | 'Lux' | 'eta' ; etc.
 cmap_choice =  'Haline' # 'Haline' | 'thermal' | 'oranges'
 plot_meas = True
 plot_agg_meas = False
 plot_LES = True
-plot_LES_uncertainty = False
+plot_LES_uncertainty = True
 save_path = '../Plots/650Cal/LES_FS_dCp_270_280.html'
 # for more plot control, uncomment/comment function calls on lines 106-116
 
@@ -132,10 +132,12 @@ if plot_LES:
     # Plot EACH LES run with the following lines (number of list elements = number of lines):
     line_styles = ['solid']
     line_widths = [3]
-    if len(cbounds) == 0:
-      line_colors = ['black']
-    else:
+    if color_choice == 'TurbIntensity' or color_choice == 'TurbIntensity_x':
       line_colors = [common.get_color(cmap_choice, cbounds, LES_Iu[i])]
+    elif color_choice == 'WDiravg':
+      line_colors = [common.get_color(cmap_choice, cbounds, wind_angles_corr[i])]
+    else:
+      line_colors = ['black']
 
     for j in range(len(stats)):
       for k in range(len(line_styles)):
