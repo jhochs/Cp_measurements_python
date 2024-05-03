@@ -60,16 +60,37 @@ def MC_ranges_subsample(rms, subsample, skewness_sign, N_samples):
         sk.append(stats.skew(samples))
         ku.append(stats.kurtosis(samples, fisher=False))
 
+        # For plotting:
+        # x = np.linspace(0, 3, 1000)
+        # pdf = (1 / (x * rms * np.sqrt(2 * np.pi))) * np.exp(-(np.log(x))**2 / (2 * rms**2))
+        # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 6), gridspec_kw={"left" : 0.15, "right" : 0.95, "top" : 0.95, "bottom" : 0.15})
+        # ax.hist(samples, density=True, color='black', alpha=0.5, label='PDF of samples')
+        # ax.plot(x, pdf, 'k-', label='Lognormal')
+        # ax.set_xlabel(r"$C'_p$", fontsize=18)
+        # ax.set_ylabel('Probability density', fontsize=18)
+        # ax.tick_params(labelsize=18)
+        # ax.legend(fontsize=18)
+        # ax.set_xlim([0.25, 2])
+        # ax.set_ylim([0, 3.5])
+        # plt.show()
+
     # esigmasq = np.exp(rms ** 2)
     # sk_true = np.sqrt(esigmasq - 1) * (esigmasq + 2)
     # ku_true = 3 + (esigmasq - 1) * (esigmasq ** 3 + 3 * esigmasq ** 2 + 6 * esigmasq + 6)
-    # plt.plot(sk, ku, 'k.')
-    # plt.plot(sk_true, ku_true, 'r+')
-    # plt.show()
+    # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(6, 4), gridspec_kw={"left" : 0.15, "right" : 0.95, "top" : 0.95, "bottom" : 0.22})
+    # ax.plot(sk, ku, 'k.')
+    # ax.plot(sk_true, ku_true, 'r+')
 
     # Get 95% ranges of sk, ku
     sk_range = np.multiply(skewness_sign.mode, [np.percentile(sk, 2.5), np.percentile(sk, 97.5)])
     ku_range = np.array([np.percentile(ku, 2.5), np.percentile(ku, 97.5)])
+
+    # x, y = common.ellipse((np.mean(sk), np.mean(ku)), np.diff(sk_range), np.diff(ku_range), np.pi/2 + np.arctan(np.polyfit(sk, ku, 1)[0]))
+    # ax.plot(x, y, 'r--')
+    # ax.set_xlabel(r"$C'_{p,skew}$", fontsize=18)
+    # ax.set_ylabel(r"$C'_{p,kurt}$", fontsize=18)
+    # ax.tick_params(labelsize=18)
+    # plt.show()
 
     return np.abs(sk_range[1] - sk_range[0]), np.abs(ku_range[1] - ku_range[0])
 
@@ -186,14 +207,24 @@ def perform_aggregation(df, Iu_bounds, min_windows, method):
         dff['dCpskew'] = dff['dCpskew'] / dCpskew_range
         dff['dCpkurt'] = dff['dCpkurt'] / dCpkurt_range
 
+        # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5, 4), gridspec_kw={"left" : 0.22, "right" : 0.95, "top" : 0.95, "bottom" : 0.22})
+        # ax.plot(dff['dCpskew'], dff['dCpkurt'], 'k.', markersize=12)
+        # ax.set_xlabel(r"$C'_{p,skew}\ /\ ΔC'_{p,skew}$", fontsize=18)
+        # ax.set_ylabel(r"$C'_{p,kurt}\ /\ ΔC'_{p,kurt}$", fontsize=18)
+        # ax.tick_params(labelsize=18)
+        # plt.show()
+
         if N_points >= min_windows:
             determine_clusters(dff)
             # N_clusters = int(np.floor(N_points / min_windows))
             # determine_clusters_alt(dff, N_clusters)
 
-            # plt.scatter(dff['dCpskew'], dff['dCpkurt'], c=dff['labels'], cmap='viridis', s=50, alpha=0.7)
-            # plt.title('Position: %.2f' %(pos))
-            # # plt.colorbar()
+            # fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5, 4), gridspec_kw={"left" : 0.22, "right" : 0.95, "top" : 0.95, "bottom" : 0.22})
+            # sc = ax.scatter(dff['dCpskew'], dff['dCpkurt'], c=dff['labels'], cmap='viridis', s=50, alpha=0.7)
+            # ax.set_title('Position: %.2f' %(pos))
+            # ax.set_xlabel(r"$C'_{p,skew}\ /\ ΔC'_{p,skew}$", fontsize=18)
+            # ax.set_ylabel(r"$C'_{p,kurt}\ /\ ΔC'_{p,kurt}$", fontsize=18)
+            # ax.tick_params(labelsize=18)
             # plt.show()
 
             # Check clusters are not too sparse, if a cluster is too sparse, 

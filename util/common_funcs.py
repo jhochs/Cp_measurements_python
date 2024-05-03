@@ -6,6 +6,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
 symbols = ['circle', 'diamond', 'square', 'star', 'triangle-down', 'x', 'cross', 'pentagon', 'triangle-up', 'triangle-left', 'triangle-right', 'hexagram', 'star-triangle-up', 'star-triangle-down', 'diamond-tall', 'circle', 'diamond', 'square', 'star', 'triangle-down', 'x', 'cross']
+symbols_2D = np.array([['circle', 'circle-open'], ['square', 'square-open'], ['diamond', 'diamond-open'], ['pentagon', 'pentagon-open']])
 colors = ['black', 'navy', 'blue', 'cyan', 'aqua', 'limegreen', 'green', 'darkgreen', 'plum', 'purple', 'red', 'crimson', 'magenta', 'coral', 'brown']
 
 def check_keys(dict):
@@ -186,6 +187,9 @@ def labels(color_choice):
     if color_choice == 'TurbIntensity' or color_choice == 'TurbIntensity_x':
         legend_label = 'I_u'
         cbar_label = 'I<sub>u</sub>'
+    elif color_choice == 'WDiravg':
+        legend_label = 'θ<sub>anem</sub> [°]'
+        cbar_label = 'θ<sub>anem</sub> [°]'
     elif color_choice == 'eta':
         legend_label = 'η'
         cbar_label = 'η'
@@ -260,3 +264,18 @@ def add_axis_labels(fig, rows, cols, xlabel):
         for row in range(len(rows)):
             fig.update_yaxes(title=dict(text=label_dict[rows[row]], font_size=20), row=row+1, col=col+1)
         fig.update_xaxes(title=dict(text=xlabel, font_size=18), row=len(rows), col=col+1)
+
+def ellipse(center, major_axis, minor_axis, theta):
+    # Center of the ellipse
+    h, k = center
+    
+    # Semi-major and semi-minor axes
+    a = major_axis / 2
+    b = minor_axis / 2
+    
+    # Parametric equation of the ellipse
+    t = np.linspace(0, 2*np.pi, 200)
+    x = h + a * np.cos(t) * np.cos(theta) - b * np.sin(t) * np.sin(theta)
+    y = k + a * np.cos(t) * np.sin(theta) + b * np.sin(t) * np.cos(theta)
+    
+    return x, y

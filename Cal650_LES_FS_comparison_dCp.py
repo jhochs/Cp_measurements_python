@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -18,53 +19,65 @@ dCprms_maxRange = 0.03
 exclude_third_outlier = True  # doesn't apply for tethered motes
 exclude_lowWS = True
 exclude_highRangeStats = False  # doesn't apply for tethered motes
-WDir_range = [250, 272]
+# WDir_range = [246, 266]
+# WDir_range = [246, 277]
+WDir_range = np.array([[255, 265], [265, 275]])
 # Note that 270deg LES WDir range is [255, 258] and Iu = [0.68, 0.73]
 
 cbound_percentiles = [3, 97]  # used for both binning and regular plot colorbar
 n_bins = 3  # if plotting by binning turbulence intensity
 
-agg_Iu_range = [0.68, 0.73] # for aggregation only
+agg_Iu_range = [0.68, 0.74] # for aggregation only
 agg_ranges_method = 'MC_ranges' # MC_ranges | LES_ranges
 
+# LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/']
 LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
                      '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']
 wind_angles = [270, 280]
 wind_angles_corr = [256, 267]
 
 # LES turbulence intensity as measured by rooftop anemometer:
-LES_Iu = [0.71, 0.57]
+LES_Iu = [0.71, 0.57] #[0.71, 0.57]
 
 # Plot options
 types = ['tethered']  # ['tethered', 'onboard']
 stats = ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
-color_choice = 'WDiravg'  # None | 'TurbIntensity_x' | 'Lux' | 'eta' ; etc.
-cmap_choice =  'Haline' # 'Haline' | 'thermal' | 'oranges'
+color_choice = 'TurbIntensity_x' # None | 'TurbIntensity_x' | 'WDiravg' | 'Lux' | 'eta' ; etc.
+cmap_choice = 'Haline' # 'Haline' | 'thermal' | 'oranges'
 plot_meas = True
-plot_agg_meas = False
-plot_LES = True
-plot_LES_uncertainty = True
-save_path = '../Plots/650Cal/LES_FS_dCp_270_280.html'
+plot_agg_meas = True
+LES_plot_type = '10min_curves' # None | 'single_curve' | 'curve_and_range' | '10min_curves'
+save_path = '../Plots/650Cal/LES_FS_dCp_270_280_colored_by_Iu_separate_LES_10min_unfilled_meas.html'
 # for more plot control, uncomment/comment function calls on lines 106-116
 
 #====================================================================================
 # IMPORT LES RESULTS
 LES_side = []
 LES_top = []
+
+if LES_plot_type == '10min_curves':
+  wind_angles_corr = []
+  LES_Iu = []
+
 for i in range(len(LES_results_paths)):
     side_mat = LES_results_paths[i] + 'parapet_side_Cpstats.mat'
+    top_mat = LES_results_paths[i] + 'parapet_top_Cpstats.mat'
 
-    if plot_LES_uncertainty:
-      LES_side.append(Cal650.get_perimeter_results_with_ranges(side_mat, 'side', wind_angles[i]))
-    else:
+    if LES_plot_type == 'single_curve':
       LES_side.append(Cal650.get_perimeter_results(side_mat, 'side', wind_angles[i]))
-
-    if len(types)==2:
-      top_mat = LES_results_paths[i] + 'parapet_top_Cpstats.mat'  
-      if plot_LES_uncertainty:
+      if len(types) == 2:
+        LES_top.append(Cal650.get_perimeter_results(top_mat, 'top', wind_angles[i]))
+    elif LES_plot_type == 'curve_and_range':
+      LES_side.append(Cal650.get_perimeter_results_with_ranges(side_mat, 'side', wind_angles[i]))
+      if len(types) == 2:
         LES_top.append(Cal650.get_perimeter_results_with_ranges(top_mat, 'top', wind_angles[i]))
-      else:
-        LES_top.append(Cal650.get_perimeter_results(top_mat, 'top', wind_angles[i]))   
+    elif LES_plot_type == '10min_curves':
+      mats = os.listdir(LES_results_paths[i] + 'probes_10min')
+      for mat in mats:
+          side_mat = LES_results_paths[i] + 'probes_10min/' + mat
+          LES_side.append(Cal650.get_perimeter_results(side_mat, 'side', wind_angles[i]))
+          LES_Iu.append(common.loadmat(side_mat)['probes']['Iu'])
+          wind_angles_corr.append(common.loadmat(side_mat)['probes']['WDir'])
 
 #====================================================================================
 # IMPORT & PROCESS MEASUREMENT RESULTS
@@ -81,7 +94,13 @@ if exclude_highRangeStats:
   meas_data = meas_data[meas_data['Above Cp range threshold'] == 0]
 
 # Filter by wind direction
-meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0], meas_data['WDiravg'] < WDir_range[1])]
+WDir_range = np.array(WDir_range)
+meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0,0], meas_data['WDiravg'] < WDir_range[WDir_range.shape[0]-1,1])]
+# if isinstance(WDir_range, list):
+#   meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0], meas_data['WDiravg'] < WDir_range[1])]
+#   WDir_range = np.array(WDir_range)
+# else:
+#   meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0,0], meas_data['WDiravg'] < WDir_range[WDir_range.shape[0]-1,1])]
 
 # Calculate gust factor:
 for i in [1, 2, 3]:
@@ -116,7 +135,14 @@ if plot_meas:
   if plot_agg_meas:
     agg_fx.plot_agg_meas_points(fig, df_agg, stats, color='N_windows', cmap=cmap_choice)
   else:
-    Cal650.plot_meas_points(fig, meas_data, types, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds)
+    if LES_plot_type == '10min_curves':
+      fill_ranges = {
+                    'TurbIntensity_x' : [np.min(LES_Iu)-0.01, np.max(LES_Iu)+0.01],
+                    'WDiravg': [np.min(wind_angles_corr)-1, np.max(wind_angles_corr)+1]
+      }
+    else:
+      fill_ranges = None
+    Cal650.plot_meas_points(fig, meas_data, types, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds, fill_ranges=fill_ranges, WDir_ranges=WDir_range)
   # plot_mean = True
   # plot_CI = True
   # Cal650.plot_meas_mean_CI(fig, meas_data_binned, types, stats, [plot_mean, plot_CI])
@@ -127,14 +153,17 @@ if plot_meas:
 #====================================================================================
 # PLOT LES
 
-if plot_LES:
+if LES_plot_type is not None:
   for i in range(len(LES_Iu)): # LES runs
     # Plot EACH LES run with the following lines (number of list elements = number of lines):
-    line_styles = ['solid']
-    line_widths = [3]
-    if color_choice == 'TurbIntensity' or color_choice == 'TurbIntensity_x':
+    if LES_Iu[i] > 0.6:
+      line_styles = ['solid']
+    else:
+      line_styles = ['dot']
+    line_widths = [1.5] # was [3]
+    if (color_choice == 'TurbIntensity' or color_choice == 'TurbIntensity_x') and not plot_agg_meas:
       line_colors = [common.get_color(cmap_choice, cbounds, LES_Iu[i])]
-    elif color_choice == 'WDiravg':
+    elif color_choice == 'WDiravg' and not plot_agg_meas:
       line_colors = [common.get_color(cmap_choice, cbounds, wind_angles_corr[i])]
     else:
       line_colors = ['black']
@@ -155,7 +184,7 @@ if plot_LES:
                                 hoverinfo='none'),
                     row=1+j, col=1)
         
-        if plot_LES_uncertainty:
+        if LES_plot_type == 'curve_and_range':
           if stats[j] + '_deltaplus' not in LES_side[i].columns:
             raise ValueError('Specified LES data does not report uncertainties')
           
@@ -193,9 +222,9 @@ common.add_axis_labels(fig, stats, types, 'Position [m]')
 
 # Add colorbar:
 if color_choice is not None:
-  fig.update_traces(marker=dict(colorbar={'title': {'text' : cbar_label, 'font': {'size': 24, 'family': 'Arial'}}, 'len':0.5, 'y':0.77}), row=1, col=1) #, colorbar_x=0.46
+  fig.update_traces(marker=dict(colorbar={'title': {'text' : cbar_label, 'font': {'size': 24, 'family': 'Arial'}}, 'len':0.4, 'y':0.83}), row=1, col=1) #, colorbar_x=0.46
 if plot_agg_meas is True:
-  fig.update_traces(marker=dict(colorbar={'title': {'text' : 'N<sub>windows</sub>', 'font': {'size': 24, 'family': 'Arial'}}}), row=1, col=1)
+  fig.update_traces(marker=dict(colorbar={'title': {'text' : 'N<sub>windows</sub>', 'font': {'size': 24, 'family': 'Arial'}}, 'len':0.7, 'y':0.7}), row=1, col=1)
 
 
 config = {

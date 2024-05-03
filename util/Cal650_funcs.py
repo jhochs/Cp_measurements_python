@@ -260,7 +260,8 @@ def get_perimeter_results_with_ranges(file, roof, wind_angle):
     coord_idx_path = 'util/perim_coords/parapet-' + roof + '_perimcoords_' + str(wind_angle) + '.csv'
     return process_probes(df, coord_idx_path)
 
-def plot_meas_points(fig, meas, types, stats, **kwargs):        
+def plot_meas_points(fig, meas, types, stats, **kwargs):
+    WDir_ranges = kwargs['WDir_ranges']  
     for col in range(len(types)):  # different types tethered/onboard
         for row in range(len(stats)):  # different stats
             df = meas[meas['Type'] == types[col]]
@@ -269,7 +270,9 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                 dff = df[df['Mote'] == motes[i]]
 
                 if 'color' in kwargs and kwargs['color'] is not None:
-                    color = meas[kwargs['color']]
+                    color_col = kwargs['color']
+                    color = dff[color_col]
+                    fill_ranges = kwargs['fill_ranges']
                 else:
                     color = 'gray'
                     kwargs['cmap'] = None
@@ -278,21 +281,57 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                 for j in [1, 2, 3]: # each sensor
                     cur_pos = dff['Position'].iloc[0][j-1]
                     if not np.isnan(cur_pos):
-                        y = dff[stats[row] + '_' + str(j)]
-                        x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
-                        fig.add_trace(go.Scatter(
-                        x=x,
-                        y=y,
-                        mode='markers',
-                        marker_color=color,
-                        marker = dict(
-                            size=4,
-                            colorscale=kwargs['cmap'], 
-                            opacity=1,
-                            cmin=kwargs['cbounds'][0],
-                            cmax=kwargs['cbounds'][1]),
-                        showlegend=False),
-                        row=row+1, col=col+1)
+                        for k in range(WDir_ranges.shape[0]):  # each WDir range
+                            dfff = dff[np.logical_and(dff['WDiravg'] >= WDir_ranges[k,0], dff['WDiravg'] <= WDir_ranges[k,1])]
+                            if fill_ranges is not None:
+                                # Create a mask that matches the ranges in fill_ranges:
+                                mask = pd.Series([True] * len(dfff), index=dfff.index) 
+                                for dfff_col, (min_val, max_val) in fill_ranges.items():
+                                    mask = mask & (dfff[dfff_col] >= min_val) & (dfff[dfff_col] <= max_val)
+                                
+                                # Split into two dataframes, one for out of range one for in range:
+                                dfff_out_of_range = dfff.copy()
+                                dfff = dfff[mask]
+                                color = dfff[color_col]
+                                dfff_out_of_range = dfff_out_of_range[~mask]
+
+                                # Plot all the unfilled datapoints:
+                                y = dfff_out_of_range[stats[row] + '_' + str(j)]
+                                x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
+                                
+                                fig.add_trace(go.Scatter(
+                                    x=x,
+                                    y=y,
+                                    mode='markers',
+                                    marker_color=dfff_out_of_range[color_col],
+                                    marker = dict(
+                                        symbol=common.symbols_2D[k,1],
+                                        size=3,
+                                        colorscale=kwargs['cmap'], 
+                                        opacity=1,
+                                        cmin=kwargs['cbounds'][0],
+                                        cmax=kwargs['cbounds'][1]),
+                                    showlegend=False),
+                                row=row+1, col=col+1)
+
+                            # Plot all the data (no fill_range) OR just the filled datapoints:
+                            y = dfff[stats[row] + '_' + str(j)]
+                            x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
+                            fig.add_trace(go.Scatter(
+                                x=x,
+                                y=y,
+                                mode='markers',
+                                marker_color=color,
+                                marker = dict(
+                                    symbol=common.symbols_2D[k,0],
+                                    size=3,
+                                    colorscale=kwargs['cmap'], 
+                                    opacity=1,
+                                    cmin=kwargs['cbounds'][0],
+                                    cmax=kwargs['cbounds'][1]),
+                                showlegend=False),
+                            row=row+1, col=col+1)
+                            
 
 def prepare_data_for_plot(df, sensor_type, stat):
     x_data = []
@@ -398,3 +437,6 @@ def set_yranges(fig, stats, types, df):
             ymin = np.nanmin(dff_stat.values)
             ymax = np.nanmax(dff_stat.values)
             fig.update_yaxes(range=[ymin - 0.05*np.abs(ymin), ymax + 0.05*np.abs(ymax)], row=row+1, col=col+1)
+
+def within_range(value, array, thresh):
+    return np.any(np.abs(value - array) < thresh)
