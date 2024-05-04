@@ -19,9 +19,9 @@ dCprms_maxRange = 0.03
 exclude_third_outlier = True  # doesn't apply for tethered motes
 exclude_lowWS = True
 exclude_highRangeStats = False  # doesn't apply for tethered motes
-# WDir_range = [246, 266]
+WDir_range = [246, 266]
 # WDir_range = [246, 277]
-WDir_range = np.array([[255, 265], [265, 275]])
+# WDir_range = np.array([[255, 265], [265, 275]])
 # Note that 270deg LES WDir range is [255, 258] and Iu = [0.68, 0.73]
 
 cbound_percentiles = [3, 97]  # used for both binning and regular plot colorbar
@@ -30,24 +30,24 @@ n_bins = 3  # if plotting by binning turbulence intensity
 agg_Iu_range = [0.68, 0.74] # for aggregation only
 agg_ranges_method = 'MC_ranges' # MC_ranges | LES_ranges
 
-# LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/']
-LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
-                     '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']
-wind_angles = [270, 280]
+LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/']
+# LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
+#                      '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']
+wind_angles = [270]
 wind_angles_corr = [256, 267]
 
 # LES turbulence intensity as measured by rooftop anemometer:
-LES_Iu = [0.71, 0.57] #[0.71, 0.57]
+LES_Iu = [0.71] #[0.71, 0.57]
 
 # Plot options
 types = ['tethered']  # ['tethered', 'onboard']
-stats = ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
+stats = ['dCprms', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
 color_choice = 'TurbIntensity_x' # None | 'TurbIntensity_x' | 'WDiravg' | 'Lux' | 'eta' ; etc.
 cmap_choice = 'Haline' # 'Haline' | 'thermal' | 'oranges'
 plot_meas = True
 plot_agg_meas = True
-LES_plot_type = '10min_curves' # None | 'single_curve' | 'curve_and_range' | '10min_curves'
-save_path = '../Plots/650Cal/LES_FS_dCp_270_280_colored_by_Iu_separate_LES_10min_unfilled_meas.html'
+LES_plot_type = 'curve_and_range' # None | 'single_curve' | 'curve_and_range' | '10min_curves'
+save_path = '../Plots/650Cal/LES_FS_dCp_agg_270.html'
 # for more plot control, uncomment/comment function calls on lines 106-116
 
 #====================================================================================
@@ -94,13 +94,11 @@ if exclude_highRangeStats:
   meas_data = meas_data[meas_data['Above Cp range threshold'] == 0]
 
 # Filter by wind direction
-WDir_range = np.array(WDir_range)
-meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0,0], meas_data['WDiravg'] < WDir_range[WDir_range.shape[0]-1,1])]
-# if isinstance(WDir_range, list):
-#   meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0], meas_data['WDiravg'] < WDir_range[1])]
-#   WDir_range = np.array(WDir_range)
-# else:
-#   meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0,0], meas_data['WDiravg'] < WDir_range[WDir_range.shape[0]-1,1])]
+if isinstance(WDir_range, list):
+  meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0], meas_data['WDiravg'] < WDir_range[1])]
+  WDir_range = np.array(WDir_range)
+else:
+  meas_data = meas_data[np.logical_and(meas_data['WDiravg'] > WDir_range[0,0], meas_data['WDiravg'] < WDir_range[WDir_range.shape[0]-1,1])]
 
 # Calculate gust factor:
 for i in [1, 2, 3]:
@@ -114,16 +112,20 @@ for i in [1, 2, 3]:
 
 meas_data_binned = Cal650.bin_by(meas_data)
 
-if color_choice is not None:
+
+if plot_agg_meas:
+  df_long = Cal650.wide_to_long(meas_data[meas_data['Type'] == 'tethered'])
+  df_agg = agg_fx.perform_aggregation(df_long, agg_Iu_range, 6, agg_ranges_method)
+  df_agg['T'] = df_agg['N_windows'] * 10
+
+if plot_agg_meas:
+  cbounds = [df_agg['T'].min(), df_agg['T'].max()]
+elif color_choice is not None:
   cbounds = [np.percentile(meas_data[color_choice], cbound_percentiles[0]), np.percentile(meas_data[color_choice], cbound_percentiles[1])]
   bins = np.linspace(cbounds[0], cbounds[1], n_bins+1)
   meas_data_Iu_binned = Cal650.bin_by(meas_data, grouping=color_choice, bins=bins)
 else:
   cbounds = []
-
-if plot_agg_meas:
-  df_long = Cal650.wide_to_long(meas_data[meas_data['Type'] == 'tethered'])
-  df_agg = agg_fx.perform_aggregation(df_long, agg_Iu_range, 6, agg_ranges_method)
 
 #====================================================================================
 # PLOT MEASUREMENTS
@@ -133,7 +135,7 @@ legend_label, cbar_label = common.labels(color_choice)
 
 if plot_meas:
   if plot_agg_meas:
-    agg_fx.plot_agg_meas_points(fig, df_agg, stats, color='N_windows', cmap=cmap_choice)
+    agg_fx.plot_agg_meas_points(fig, df_agg, stats, color='T', cmap=cmap_choice, cbounds=cbounds)
   else:
     if LES_plot_type == '10min_curves':
       fill_ranges = {
@@ -161,9 +163,11 @@ if LES_plot_type is not None:
     else:
       line_styles = ['dot']
     line_widths = [1.5] # was [3]
-    if (color_choice == 'TurbIntensity' or color_choice == 'TurbIntensity_x') and not plot_agg_meas:
+    if plot_agg_meas:
+      line_colors = [common.get_color(cmap_choice, cbounds, 60)]
+    elif color_choice == 'TurbIntensity' or color_choice == 'TurbIntensity_x':
       line_colors = [common.get_color(cmap_choice, cbounds, LES_Iu[i])]
-    elif color_choice == 'WDiravg' and not plot_agg_meas:
+    elif color_choice == 'WDiravg':
       line_colors = [common.get_color(cmap_choice, cbounds, wind_angles_corr[i])]
     else:
       line_colors = ['black']
@@ -224,7 +228,7 @@ common.add_axis_labels(fig, stats, types, 'Position [m]')
 if color_choice is not None:
   fig.update_traces(marker=dict(colorbar={'title': {'text' : cbar_label, 'font': {'size': 24, 'family': 'Arial'}}, 'len':0.4, 'y':0.83}), row=1, col=1) #, colorbar_x=0.46
 if plot_agg_meas is True:
-  fig.update_traces(marker=dict(colorbar={'title': {'text' : 'N<sub>windows</sub>', 'font': {'size': 24, 'family': 'Arial'}}, 'len':0.7, 'y':0.7}), row=1, col=1)
+  fig.update_traces(marker=dict(colorbar={'title': {'text' : 'T [min]', 'font': {'size': 24, 'family': 'Arial'}}, 'len':0.7, 'y':0.7}), row=1, col=1)
 
 
 config = {

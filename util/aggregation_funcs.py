@@ -165,8 +165,11 @@ def calculate_dCpmin(position, df, df_agg, min_windows):
                 {'Position':[position], 
                  'N_windows':[dff.shape[0]],
                  'dCprms_avg':[dff['dCprms'].mean()], 
-                 'dCprms_range':[np.ptp(dff['dCprms'])], 
+                 'dCprms_min':[np.min(dff['dCprms'])], 
+                 'dCprms_max':[np.max(dff['dCprms'])], 
                  'dCpmin_160':[dCpmin],
+                 'dCpmin_10_min':[np.min(dff['dCpmin'])],
+                 'dCpmin_10_max':[np.max(dff['dCpmin'])],
                  'dCpskew_range':[np.ptp(dff['dCpskew'])],
                  'dCpkurt_range':[np.ptp(dff['dCpkurt'])]})
             df_agg = pd.concat([df_agg, df_new], ignore_index=True)
@@ -258,22 +261,25 @@ def perform_aggregation(df, Iu_bounds, min_windows, method):
 
 def plot_agg_meas_points(fig, df, stats, **kwargs):
     color = kwargs['color']
+    cbounds = kwargs['cbounds']
     cmap = kwargs['cmap']
-
-    agg_stats = stats.copy()
 
     # Only setup for tethered motes (parapet side)
     for row in range(len(stats)): 
-        if agg_stats[row] == 'dCprms':
-            agg_stats[row] = 'dCprms_avg'
-        elif agg_stats[row] == 'dCpmin':
-            agg_stats[row] = 'dCpmin_160'
+        if stats[row] == 'dCprms':
+            cur_stat = 'dCprms_avg'
+            cur_plus = 'dCprms_max'
+            cur_minus = 'dCprms_min'
+        elif stats[row] == 'dCpmin':
+            cur_stat = 'dCpmin_160'
+            cur_plus = 'dCpmin_10_max'
+            cur_minus = 'dCpmin_10_min'
         else:
             continue
 
         fig.add_trace(go.Scatter(
             x=df['Position'],
-            y=df[agg_stats[row]],
+            y=df[cur_stat],
             mode='markers',
             marker_color=df[color],
             marker = dict(
@@ -288,3 +294,12 @@ def plot_agg_meas_points(fig, df, stats, **kwargs):
             ),
             showlegend=False),
         row=row+1, col=1)
+        for i, df_row in df.iterrows():
+            cur_color = common.get_color(cmap, cbounds, df_row[color])
+            fig.add_trace(go.Scatter(
+                x=df_row['Position'] * np.array([1, 1]),
+                y=[df_row[cur_minus], df_row[cur_plus]],
+                mode='lines',
+                line_color=cur_color,
+                showlegend=False),
+            row=row+1, col=1)
