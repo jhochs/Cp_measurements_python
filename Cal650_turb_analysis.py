@@ -18,7 +18,7 @@ minU = 5.7
 dCpmin_maxRange = 0.2 # exclude datapoints where range between measurements from different sensors on mote exceeds this value
 dCprms_maxRange = 0.03 
 exclude_lowWS = True
-WDir_range = [246, 277]
+WDir_range = [255, 268]
 
 LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
                      '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']

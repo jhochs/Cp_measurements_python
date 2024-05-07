@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
 symbols = ['circle', 'diamond', 'square', 'star', 'triangle-down', 'x', 'cross', 'pentagon', 'triangle-up', 'triangle-left', 'triangle-right', 'hexagram', 'star-triangle-up', 'star-triangle-down', 'diamond-tall', 'circle', 'diamond', 'square', 'star', 'triangle-down', 'x', 'cross']
-symbols_2D = np.array([['circle', 'circle-open'], ['square', 'square-open'], ['diamond', 'diamond-open'], ['pentagon', 'pentagon-open']])
+symbols_2D = np.array([['circle', 'circle-open'], ['diamond', 'diamond-open'], ['square', 'square-open'], ['pentagon', 'pentagon-open']])
 colors = ['black', 'navy', 'blue', 'cyan', 'aqua', 'limegreen', 'green', 'darkgreen', 'plum', 'purple', 'red', 'crimson', 'magenta', 'coral', 'brown']
 
 def check_keys(dict):

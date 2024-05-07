@@ -306,7 +306,7 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                                     marker_color=dfff_out_of_range[color_col],
                                     marker = dict(
                                         symbol=common.symbols_2D[k,1],
-                                        size=3,
+                                        size=4,
                                         colorscale=kwargs['cmap'], 
                                         opacity=1,
                                         cmin=kwargs['cbounds'][0],
@@ -324,7 +324,7 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                                 marker_color=color,
                                 marker = dict(
                                     symbol=common.symbols_2D[k,0],
-                                    size=3,
+                                    size=4,
                                     colorscale=kwargs['cmap'], 
                                     opacity=1,
                                     cmin=kwargs['cbounds'][0],

@@ -19,9 +19,9 @@ dCprms_maxRange = 0.03
 exclude_third_outlier = True  # doesn't apply for tethered motes
 exclude_lowWS = True
 exclude_highRangeStats = False  # doesn't apply for tethered motes
-WDir_range = [246, 266]
+# WDir_range = [246, 266]
 # WDir_range = [246, 277]
-# WDir_range = np.array([[255, 265], [265, 275]])
+WDir_range = np.array([[255, 265], [265, 275]])
 # Note that 270deg LES WDir range is [255, 258] and Iu = [0.68, 0.73]
 
 cbound_percentiles = [3, 97]  # used for both binning and regular plot colorbar
@@ -30,24 +30,24 @@ n_bins = 3  # if plotting by binning turbulence intensity
 agg_Iu_range = [0.68, 0.74] # for aggregation only
 agg_ranges_method = 'MC_ranges' # MC_ranges | LES_ranges
 
-LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/']
-# LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
-#                      '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']
-wind_angles = [270]
+# LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/']
+LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/270deg/650Cal_RL1_5/',
+                     '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']
+wind_angles = [270, 280]
 wind_angles_corr = [256, 267]
 
 # LES turbulence intensity as measured by rooftop anemometer:
-LES_Iu = [0.71] #[0.71, 0.57]
+LES_Iu = [0.71, 0.57] #[0.71, 0.57]
 
 # Plot options
 types = ['tethered']  # ['tethered', 'onboard']
-stats = ['dCprms', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
+stats = ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin']  # ['dCprms', 'dCp_skewness', 'dCp_kurtosis', 'dCpmin', 'g']
 color_choice = 'TurbIntensity_x' # None | 'TurbIntensity_x' | 'WDiravg' | 'Lux' | 'eta' ; etc.
 cmap_choice = 'Haline' # 'Haline' | 'thermal' | 'oranges'
 plot_meas = True
-plot_agg_meas = True
-LES_plot_type = 'curve_and_range' # None | 'single_curve' | 'curve_and_range' | '10min_curves'
-save_path = '../Plots/650Cal/LES_FS_dCp_agg_270.html'
+plot_agg_meas = False
+LES_plot_type = '10min_curves' # None | 'single_curve' | 'curve_and_range' | '10min_curves'
+save_path = '../Plots/650Cal/LES_FS_dCp_270_280_colored_by_Iu_separate_LES_10min_unfilled_meas.html'
 # for more plot control, uncomment/comment function calls on lines 106-116
 
 #====================================================================================
