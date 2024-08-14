@@ -24,6 +24,7 @@ LES_results_paths = ['/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/
                      '/Users/jackhochschild/Dropbox/School/Wind_Engineering/CFD/CharLES/650Cal/280deg/650Cal_280deg_RL1_5/']
 wind_angles = [270, 280]
 LES_Iu = [] #[0.71, 0.57] # leave as empty list if using 10min .mats
+LES_WDir = []
 
 types = ['tethered']
 plot_LES_10min = True
@@ -38,6 +39,7 @@ for i in range(len(LES_results_paths)):
        for mat in mats:
           side_mat = LES_results_paths[i] + 'probes_10min/' + mat
           LES_side.append(Cal650.get_perimeter_results(side_mat, 'side', wind_angles[i]))
+          LES_WDir.append(common.loadmat(side_mat)['probes']['WDir'])
           LES_Iu.append(common.loadmat(side_mat)['probes']['Iu'])
     else:
         side_mat = LES_results_paths[i] + 'parapet_side_Cpstats.mat'
@@ -84,7 +86,8 @@ stats = ['dCprms', 'dCpskew', 'dCpkurt', 'dCpmin']
 PCC = np.zeros((len(stats), len(face_names)))
 labels = [r"$C_{p,rms}$", r"$C'_{p,skew}$", r"$C'_{p,kurt}$", r"$C'_{p,min}$"]
 fig, ax = plt.subplots(nrows=4, ncols=4, figsize=(12, 8.5), gridspec_kw={"left" : 0.06, "right" : 0.97, "top" : 0.96, "bottom" : 0.07, "wspace": 0.3})
-xlim = [df['TurbIntensity_x'].min(), df['TurbIntensity_x'].max()]
+xaxis_choice = 'TurbIntensity_x' #'WDiravg'
+xlim = [df[xaxis_choice].min(), df[xaxis_choice].max()]
 for i in range(len(stats)):
     if i in [0, 1, 3]:  # for Cprms, dCpskew, dCpmin, just take min and max:
         ylim = [df[stats[i]].min(), df[stats[i]].max()]
@@ -93,23 +96,24 @@ for i in range(len(stats)):
     for j in range(len(face_names)):
         dff = df[df['Face name'] == face_names[j]]
         
-        # ax[i,j].scatter(dff['TurbIntensity_x'], dff[stats[i]], c=dff['Face color'], s=0.5*np.ones((dff.shape[0], 1)), alpha=0.3)
-        ax[i,j].scatter(dff['TurbIntensity_x'], dff[stats[i]], c='black', s=0.5*np.ones((dff.shape[0], 1)), alpha=0.3)
+        # ax[i,j].scatter(dff[xaxis_choice], dff[stats[i]], c=dff['Face color'], s=0.5*np.ones((dff.shape[0], 1)), alpha=0.3)
+        ax[i,j].scatter(dff[xaxis_choice], dff[stats[i]], c='black', s=0.5*np.ones((dff.shape[0], 1)), alpha=0.3)
         
         ax[i,j].set_xlim(xlim)
         ax[i,j].set_ylim(ylim)
 
-        x_fit = np.arange(np.min(dff['TurbIntensity_x']), np.max(dff['TurbIntensity_x']), 0.001)
-        fit = np.polyfit(dff['TurbIntensity_x'], dff[stats[i]], 1)
+        x_fit = np.arange(np.min(dff[xaxis_choice]), np.max(dff[xaxis_choice]), 0.001)
+        fit = np.polyfit(dff[xaxis_choice], dff[stats[i]], 1)
         y_fit = np.polyval(fit, x_fit)
         # ax[i,j].plot(x_fit, y_fit, '-', color=colors[j], linewidth=1.5)
         ax[i,j].plot(x_fit, y_fit, '-', color='black', linewidth=1.5)
-        PCC[i,j] = np.corrcoef(dff['TurbIntensity_x'], y=dff[stats[i]])[0,1]
+        PCC[i,j] = np.corrcoef(dff[xaxis_choice], y=dff[stats[i]])[0,1]
 
         if i==0:
             ax[i,j].set_title(face_names[j], fontsize=15)
         if i==3:
             ax[i,j].set_xlabel(r'$I_u$', fontsize=14)
+            # ax[i,j].set_xlabel(r'$\theta_{rooftop} [°]$', fontsize=14)
         if j==0:
             ax[i,j].set_ylabel(labels[i], fontsize=14)
 
@@ -120,6 +124,7 @@ for i in range(len(stats)):
 for i in range(len(LES_side)):
     cur = LES_side[i]
     cur['Iu'] = LES_Iu[i]
+    cur['WDir'] = LES_WDir[i]
     if i==0:
         df_LES = cur
     else:
@@ -141,20 +146,21 @@ for i in range(len(LES_stats)):
         
         ax[i,j].scatter(dff['Iu'], dff[LES_stats[i]], c='red', s=0.5*np.ones((dff.shape[0], 1)), alpha=0.3)
 
-        # x_fit = np.arange(np.min(dff['Iu']), np.max(dff['Iu']), 0.001)
+        x_fit = np.arange(np.min(dff['Iu']), np.max(dff['Iu']), 0.001)
         fit = np.polyfit(dff['Iu'], dff[LES_stats[i]], 1)
         y_fit = np.polyval(fit, x_fit[:len(x_fit)//2])
         ax[i,j].plot(x_fit[:len(x_fit)//2], y_fit, '-', color='red', linewidth=1.5)
         PCC_LES[i,j] = np.corrcoef(dff['Iu'], y=dff[LES_stats[i]])[0,1]
 
 # plt.show()
-plt.savefig("../Plots/650Cal/LES_FS_dCp_vs_Iu_by_face.png", dpi=300)
+# plt.savefig("../Plots/650Cal/LES_FS_dCp_vs_Iu_by_face.png", dpi=300)
+plt.savefig("/Users/jackhochschild/Desktop/LES_FS_dCp_vs_Iu_by_face.png", dpi=300)
 
-# print('----------------------------------------------------------------')
-# print('Meas PCC:')
-# for i in range(len(stats)):
-#     print('%s: %.2f | %.2f | %.2f | %.2f' %(stats[i], PCC[i,0], PCC[i,1], PCC[i,2], PCC[i,3]))
-# print('LES PCC:')
-# for i in range(len(stats)):
-#     print('%s: %.2f | %.2f | %.2f | %.2f' %(stats[i], PCC_LES[i,0], PCC_LES[i,1], PCC_LES[i,2], PCC_LES[i,3]))
-# print('----------------------------------------------------------------')
+print('----------------------------------------------------------------')
+print('Meas PCC:')
+for i in range(len(stats)):
+    print('%s: %.2f | %.2f | %.2f | %.2f' %(stats[i], PCC[i,0], PCC[i,1], PCC[i,2], PCC[i,3]))
+print('LES PCC:')
+for i in range(len(stats)):
+    print('%s: %.2f | %.2f | %.2f | %.2f' %(stats[i], PCC_LES[i,0], PCC_LES[i,1], PCC_LES[i,2], PCC_LES[i,3]))
+print('----------------------------------------------------------------')

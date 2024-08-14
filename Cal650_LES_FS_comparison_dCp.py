@@ -20,8 +20,8 @@ exclude_third_outlier = True  # doesn't apply for tethered motes
 exclude_lowWS = True
 exclude_highRangeStats = False  # doesn't apply for tethered motes
 # WDir_range = [246, 266]
-# WDir_range = [246, 277]
-WDir_range = np.array([[255, 265], [265, 275]])
+WDir_range = [245, 278]
+# WDir_range = np.array([[255, 265], [265, 275]])
 # Note that 270deg LES WDir range is [255, 258] and Iu = [0.68, 0.73]
 
 cbound_percentiles = [3, 97]  # used for both binning and regular plot colorbar
@@ -47,7 +47,7 @@ cmap_choice = 'Haline' # 'Haline' | 'thermal' | 'oranges'
 plot_meas = True
 plot_agg_meas = False
 LES_plot_type = '10min_curves' # None | 'single_curve' | 'curve_and_range' | '10min_curves'
-save_path = '../Plots/650Cal/LES_FS_dCp_270_280_colored_by_Iu_separate_LES_10min_unfilled_meas.html'
+save_path = '../Plots/650Cal/LES_FS_dCp_270_280_colored_by_Iu_separate_LES_10min_LES_Uanem.html'
 # for more plot control, uncomment/comment function calls on lines 106-116
 
 #====================================================================================
@@ -138,13 +138,13 @@ if plot_meas:
     agg_fx.plot_agg_meas_points(fig, df_agg, stats, color='T', cmap=cmap_choice, cbounds=cbounds)
   else:
     if LES_plot_type == '10min_curves':
-      fill_ranges = {
-                    'TurbIntensity_x' : [np.min(LES_Iu)-0.01, np.max(LES_Iu)+0.01],
-                    'WDiravg': [np.min(wind_angles_corr)-1, np.max(wind_angles_corr)+1]
-      }
+      marker_ranges = {
+                    'TurbIntensity_x' : np.array([[0.61, 0.81], [0.46, 0.66]]),
+                    'WDiravg': np.array([[251, 261], [262, 272]])
+                    }
     else:
       fill_ranges = None
-    Cal650.plot_meas_points(fig, meas_data, types, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds, fill_ranges=fill_ranges, WDir_ranges=WDir_range)
+    Cal650.plot_meas_points(fig, meas_data, types, stats, color=color_choice, cmap=cmap_choice, cbounds=cbounds, marker_ranges=marker_ranges)
   # plot_mean = True
   # plot_CI = True
   # Cal650.plot_meas_mean_CI(fig, meas_data_binned, types, stats, [plot_mean, plot_CI])

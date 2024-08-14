@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import re
 import plotly.graph_objects as go
 
 import util.common_funcs as common
@@ -33,12 +34,14 @@ def prepare_meas_data(FS, WS_correction, WDir_correction, minU, dCprms_maxRange,
             FS_data = pd.concat([FS_data, new_data])
 
     # Correct Cp for windspeed and wind direction:
-    FS_data[['WSavg', 'WSstd']] = FS_data[['WSavg', 'WSstd']] * WS_correction
     FS_data['WDiravg'] = FS_data['WDiravg'] + WDir_correction
-    # FS_data.update(FS_data.filter(regex='^Cp|dCp', axis=1)/ (WS_correction ** 2)) # doesn't work because don't want to scale Cp_skewness and Cp_kurtosis
-    FS_data.update(FS_data.filter(regex='^Cpmean|dCpmean', axis=1)/ (WS_correction ** 2)) 
-    FS_data.update(FS_data.filter(regex='^Cprms|dCprms', axis=1)/ (WS_correction ** 2)) 
-    FS_data.update(FS_data.filter(regex='^Cpmin|dCpmin', axis=1)/ (WS_correction ** 2))
+    Cp_cols = [col for col in FS_data.columns if re.search('^Cpmean|dCpmean|Cprms|dCprms|Cpmin|dCpmin', col)]
+    if isinstance(WS_correction, np.ndarray):
+        for i in range(WS_correction.shape[1]-1):
+            mask = np.logical_and(FS_data['WDiravg'] >= WS_correction[i,0], FS_data['WDiravg'] < WS_correction[i,1])
+            FS_data.loc[mask, Cp_cols] = FS_data.loc[mask, Cp_cols] / (WS_correction[i,2] ** 2)
+    else:
+        FS_data[Cp_cols] = FS_data[Cp_cols] / (WS_correction ** 2)
 
     # Count how many sensors worked for each measurement:
     FS_data['Sensors online'] = 3 - np.sum(np.isnan(FS_data.filter(regex='^dCprms', axis=1).to_numpy()), axis=1)
@@ -261,7 +264,6 @@ def get_perimeter_results_with_ranges(file, roof, wind_angle):
     return process_probes(df, coord_idx_path)
 
 def plot_meas_points(fig, meas, types, stats, **kwargs):
-    WDir_ranges = kwargs['WDir_ranges']  
     for col in range(len(types)):  # different types tethered/onboard
         for row in range(len(stats)):  # different stats
             df = meas[meas['Type'] == types[col]]
@@ -272,7 +274,7 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                 if 'color' in kwargs and kwargs['color'] is not None:
                     color_col = kwargs['color']
                     color = dff[color_col]
-                    fill_ranges = kwargs['fill_ranges']
+                    marker_ranges = kwargs['marker_ranges']
                 else:
                     color = 'gray'
                     kwargs['cmap'] = None
@@ -281,56 +283,55 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                 for j in [1, 2, 3]: # each sensor
                     cur_pos = dff['Position'].iloc[0][j-1]
                     if not np.isnan(cur_pos):
-                        for k in range(WDir_ranges.shape[0]):  # each WDir range
-                            dfff = dff[np.logical_and(dff['WDiravg'] >= WDir_ranges[k,0], dff['WDiravg'] <= WDir_ranges[k,1])]
-                            if fill_ranges is not None:
-                                # Create a mask that matches the ranges in fill_ranges:
-                                mask = pd.Series([True] * len(dfff), index=dfff.index) 
-                                for dfff_col, (min_val, max_val) in fill_ranges.items():
-                                    mask = mask & (dfff[dfff_col] >= min_val) & (dfff[dfff_col] <= max_val)
+                        inv_mask = pd.Series([True] * len(dff), index=dff.index)
+                        if marker_ranges is not None:
+                            for k in range(marker_ranges['WDiravg'].shape[0]):
+                                # Create a mask that matches the ranges in marker_ranges:
+                                WDir_mask = np.logical_and(dff['WDiravg'] > marker_ranges['WDiravg'][k,0],  dff['WDiravg'] <= marker_ranges['WDiravg'][k,1])
+                                Iu_mask = np.logical_and(dff[color_col] > marker_ranges['TurbIntensity_x'][k,0],  dff[color_col] <= marker_ranges['TurbIntensity_x'][k,1])
+                                mask = WDir_mask & Iu_mask
+                                dfff = dff[mask]
+                                inv_mask = inv_mask & ~mask
+                                # mask = pd.Series([True] * len(dfff), index=dfff.index) 
+                                # for dfff_col, (min_val, max_val) in fill_ranges.items():
+                                #     mask = mask & (dfff[dfff_col] >= min_val) & (dfff[dfff_col] <= max_val)
                                 
-                                # Split into two dataframes, one for out of range one for in range:
-                                dfff_out_of_range = dfff.copy()
-                                dfff = dfff[mask]
-                                color = dfff[color_col]
-                                dfff_out_of_range = dfff_out_of_range[~mask]
-
-                                # Plot all the unfilled datapoints:
-                                y = dfff_out_of_range[stats[row] + '_' + str(j)]
+                                # Plot the filled datapoints:
+                                y = dfff[stats[row] + '_' + str(j)]
                                 x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
                                 
+                                # Plot points within the ranges:
                                 fig.add_trace(go.Scatter(
                                     x=x,
                                     y=y,
                                     mode='markers',
-                                    marker_color=dfff_out_of_range[color_col],
+                                    marker_color=color,
                                     marker = dict(
-                                        symbol=common.symbols_2D[k,1],
-                                        size=4,
-                                        colorscale=kwargs['cmap'], 
-                                        opacity=1,
+                                        symbol=common.symbols[k+1],
+                                        size=5,
+                                        colorscale=kwargs['cmap'],
                                         cmin=kwargs['cbounds'][0],
                                         cmax=kwargs['cbounds'][1]),
                                     showlegend=False),
                                 row=row+1, col=col+1)
 
-                            # Plot all the data (no fill_range) OR just the filled datapoints:
-                            y = dfff[stats[row] + '_' + str(j)]
-                            x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
-                            fig.add_trace(go.Scatter(
-                                x=x,
-                                y=y,
-                                mode='markers',
-                                marker_color=color,
-                                marker = dict(
-                                    symbol=common.symbols_2D[k,0],
-                                    size=4,
-                                    colorscale=kwargs['cmap'], 
-                                    opacity=1,
-                                    cmin=kwargs['cbounds'][0],
-                                    cmax=kwargs['cbounds'][1]),
-                                showlegend=False),
-                            row=row+1, col=col+1)
+                        # Plot all the data (no fill_range) OR just the unfilled datapoints:
+                        dfff = dff[inv_mask] # if there are no marker_ranges, inv_mask is all true
+                        y = dfff[stats[row] + '_' + str(j)]
+                        x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
+                        fig.add_trace(go.Scatter(
+                            x=x,
+                            y=y,
+                            mode='markers',
+                            marker_color=dfff[color_col],
+                            marker = dict(
+                                symbol='circle-open',
+                                size=3,
+                                colorscale=kwargs['cmap'], 
+                                cmin=kwargs['cbounds'][0],
+                                cmax=kwargs['cbounds'][1]),
+                            showlegend=False),
+                        row=row+1, col=col+1)
                             
 
 def prepare_data_for_plot(df, sensor_type, stat):

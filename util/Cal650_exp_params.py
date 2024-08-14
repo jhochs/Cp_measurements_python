@@ -8,7 +8,9 @@ import numpy as np
 
 # Correction for FS measurements based on LES results:
 WDir_correction = 0
-WS_correction = 1.83
+WS_correction = 1.83 # nominal
+# WS_correction = 1.62 # using anemometer horiz. magnitude
+# WS_correction = np.array([[0, 261, 1.9], [261, 360, 1.6]]) # [start, stop, correction factor]
 
 edge_length = 3718  # length of each side of 650 California, in cm
 
