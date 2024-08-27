@@ -19,7 +19,6 @@ dCprms_maxRange = 0.03
 exclude_third_outlier = True  # doesn't apply for tethered motes
 exclude_lowWS = True
 exclude_highRangeStats = False  # doesn't apply for tethered motes
-# WDir_range = [246, 266]
 WDir_range = [245, 278]
 # WDir_range = np.array([[255, 265], [265, 275]])
 # Note that 270deg LES WDir range is [255, 258] and Iu = [0.68, 0.73]
@@ -47,7 +46,7 @@ cmap_choice = 'Haline' # 'Haline' | 'thermal' | 'oranges'
 plot_meas = True
 plot_agg_meas = False
 LES_plot_type = '10min_curves' # None | 'single_curve' | 'curve_and_range' | '10min_curves'
-save_path = '../Plots/650Cal/LES_FS_dCp_270_280_colored_by_Iu_separate_LES_10min_LES_Uanem.html'
+save_path = '../Plots/650Cal/LES_FS_dCp_270_280_colored_by_Iu_jittered_by_range.html'
 # for more plot control, uncomment/comment function calls on lines 106-116
 
 #====================================================================================
@@ -139,7 +138,7 @@ if plot_meas:
   else:
     if LES_plot_type == '10min_curves':
       marker_ranges = {
-                    'TurbIntensity_x' : np.array([[0.61, 0.81], [0.46, 0.66]]),
+                    # 'TurbIntensity_x' : np.array([[0.61, 0.81], [0.46, 0.66]]),
                     'WDiravg': np.array([[251, 261], [262, 272]])
                     }
     else:

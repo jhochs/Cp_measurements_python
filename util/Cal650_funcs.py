@@ -285,11 +285,12 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                     if not np.isnan(cur_pos):
                         inv_mask = pd.Series([True] * len(dff), index=dff.index)
                         if marker_ranges is not None:
+                            jitter = [-0.5, 0.5]
                             for k in range(marker_ranges['WDiravg'].shape[0]):
                                 # Create a mask that matches the ranges in marker_ranges:
                                 WDir_mask = np.logical_and(dff['WDiravg'] > marker_ranges['WDiravg'][k,0],  dff['WDiravg'] <= marker_ranges['WDiravg'][k,1])
-                                Iu_mask = np.logical_and(dff[color_col] > marker_ranges['TurbIntensity_x'][k,0],  dff[color_col] <= marker_ranges['TurbIntensity_x'][k,1])
-                                mask = WDir_mask & Iu_mask
+                                # Iu_mask = np.logical_and(dff[color_col] > marker_ranges['TurbIntensity_x'][k,0],  dff[color_col] <= marker_ranges['TurbIntensity_x'][k,1])
+                                mask = WDir_mask # & Iu_mask
                                 dfff = dff[mask]
                                 inv_mask = inv_mask & ~mask
                                 # mask = pd.Series([True] * len(dfff), index=dfff.index) 
@@ -298,7 +299,8 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                                 
                                 # Plot the filled datapoints:
                                 y = dfff[stats[row] + '_' + str(j)]
-                                x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
+                                # x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
+                                x = (cur_pos + jitter[k]) * np.ones(np.size(y))
                                 
                                 # Plot points within the ranges:
                                 fig.add_trace(go.Scatter(
@@ -318,7 +320,8 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                         # Plot all the data (no fill_range) OR just the unfilled datapoints:
                         dfff = dff[inv_mask] # if there are no marker_ranges, inv_mask is all true
                         y = dfff[stats[row] + '_' + str(j)]
-                        x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
+                        # x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
+                        x = cur_pos * np.ones(np.size(y))
                         fig.add_trace(go.Scatter(
                             x=x,
                             y=y,
