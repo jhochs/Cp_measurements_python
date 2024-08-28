@@ -138,8 +138,8 @@ if plot_meas:
   else:
     if LES_plot_type == '10min_curves':
       marker_ranges = {
-                    # 'TurbIntensity_x' : np.array([[0.61, 0.81], [0.46, 0.66]]),
-                    'WDiravg': np.array([[251, 261], [262, 272]])
+                    'TurbIntensity_x' : np.array([[0.56, 0.71], [0.71, 1.0]]),
+                    'WDiravg': np.array([[252, 272], [252, 272]])
                     }
     else:
       fill_ranges = None

@@ -289,8 +289,8 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                             for k in range(marker_ranges['WDiravg'].shape[0]):
                                 # Create a mask that matches the ranges in marker_ranges:
                                 WDir_mask = np.logical_and(dff['WDiravg'] > marker_ranges['WDiravg'][k,0],  dff['WDiravg'] <= marker_ranges['WDiravg'][k,1])
-                                # Iu_mask = np.logical_and(dff[color_col] > marker_ranges['TurbIntensity_x'][k,0],  dff[color_col] <= marker_ranges['TurbIntensity_x'][k,1])
-                                mask = WDir_mask # & Iu_mask
+                                Iu_mask = np.logical_and(dff[color_col] > marker_ranges['TurbIntensity_x'][k,0],  dff[color_col] <= marker_ranges['TurbIntensity_x'][k,1])
+                                mask = WDir_mask & Iu_mask
                                 dfff = dff[mask]
                                 inv_mask = inv_mask & ~mask
                                 # mask = pd.Series([True] * len(dfff), index=dfff.index) 
@@ -299,6 +299,7 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                                 
                                 # Plot the filled datapoints:
                                 y = dfff[stats[row] + '_' + str(j)]
+                                color = dfff[color_col]
                                 # x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
                                 x = (cur_pos + jitter[k]) * np.ones(np.size(y))
                                 
@@ -317,7 +318,7 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                                     showlegend=False),
                                 row=row+1, col=col+1)
 
-                        # Plot all the data (no fill_range) OR just the unfilled datapoints:
+                        '''# Plot all the data (no fill_range) OR just the unfilled datapoints:
                         dfff = dff[inv_mask] # if there are no marker_ranges, inv_mask is all true
                         y = dfff[stats[row] + '_' + str(j)]
                         # x = cur_pos + (np.random.rand(np.size(y))-0.5) # jittered values
@@ -334,7 +335,7 @@ def plot_meas_points(fig, meas, types, stats, **kwargs):
                                 cmin=kwargs['cbounds'][0],
                                 cmax=kwargs['cbounds'][1]),
                             showlegend=False),
-                        row=row+1, col=col+1)
+                        row=row+1, col=col+1)'''
                             
 
 def prepare_data_for_plot(df, sensor_type, stat):
